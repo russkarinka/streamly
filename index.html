@@ -477,6 +477,31 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 1.5rem; color: var(--ink-2);
   }
+
+  /* Service picker list */
+  .service-group { margin-bottom: 1rem; }
+  .service-group-label {
+    font-size: 0.7rem; color: var(--ink-3); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 0.4rem; padding: 0 0.25rem;
+  }
+  .service-row {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 0.85rem; background: var(--surface-2);
+    border-radius: var(--radius-sm); cursor: pointer;
+    margin-bottom: 0.35rem; transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+  .service-row:active { transform: scale(0.98); background: var(--brand-soft); border-color: var(--brand); }
+  .service-row-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; flex-shrink: 0; font-weight: 600;
+  }
+  .service-row-name { flex: 1; font-size: 0.92rem; font-weight: 500; color: var(--ink); }
+  .service-row-price { font-size: 0.82rem; color: var(--ink-3); font-weight: 500; font-feature-settings: "tnum"; }
+  .service-row-flag { font-size: 0.65rem; color: var(--brand); background: var(--brand-soft); padding: 0.1rem 0.4rem; border-radius: 100px; font-weight: 600; }
+  .service-empty { text-align: center; padding: 1.5rem; color: var(--ink-3); font-size: 0.9rem; }
 </style>
 </head>
 <body>
@@ -635,28 +660,51 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="service-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div><h3 data-i18n="pickService">Pick a service</h3><div class="sub" data-i18n="pickServiceSub">Tap to add — we'll fill in a typical price</div></div>
+      <button class="close-btn" id="service-modal-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <input type="text" id="service-search" placeholder="Search...">
+      </div>
+      <div id="service-list"></div>
+      <button class="btn btn-ghost" id="service-custom-btn" style="margin-top: 0.75rem;" data-i18n="customService">+ Custom service</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="cat-modal">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-head">
-      <div><h3 data-i18n="newCatTitle">New category</h3><div class="sub" data-i18n="newCatSub">Add a custom category to track</div></div>
+      <div><h3 id="cat-modal-title" data-i18n="pickCat">Pick a category</h3><div class="sub" id="cat-modal-sub" data-i18n="pickCatSub">Tap to add — or create your own</div></div>
       <button class="close-btn" id="cat-modal-close">×</button>
     </div>
     <div class="modal-body">
-      <div class="form-group">
-        <label data-i18n="catName">Name</label>
-        <input type="text" id="new-cat-name" maxlength="40">
+      <div id="cat-presets-view">
+        <div id="cat-preset-list"></div>
+        <button class="btn btn-ghost" id="cat-custom-btn" style="margin-top: 0.75rem;" data-i18n="customCat">+ Custom category</button>
       </div>
-      <div class="form-group">
-        <label data-i18n="color">Color</label>
-        <div class="color-picker" id="color-picker"></div>
-      </div>
-      <div class="form-group">
-        <label data-i18n="icon">Icon</label>
-        <div class="icon-picker" id="icon-picker"></div>
+      <div id="cat-custom-view" style="display: none;">
+        <div class="form-group">
+          <label data-i18n="catName">Name</label>
+          <input type="text" id="new-cat-name" maxlength="40">
+        </div>
+        <div class="form-group">
+          <label data-i18n="color">Color</label>
+          <div class="color-picker" id="color-picker"></div>
+        </div>
+        <div class="form-group">
+          <label data-i18n="icon">Icon</label>
+          <div class="icon-picker" id="icon-picker"></div>
+        </div>
       </div>
     </div>
-    <div class="modal-actions">
+    <div class="modal-actions" id="cat-modal-actions" style="display: none;">
       <button class="btn btn-ghost" id="cat-cancel" data-i18n="cancel">Cancel</button>
       <button class="btn btn-primary" id="cat-create" data-i18n="create">Create</button>
     </div>
@@ -696,6 +744,12 @@ const I18N = {
     helloMorning: 'Good morning', helloAfternoon: 'Good afternoon', helloEvening: 'Good evening',
     monthsTracked: 'months tracked', enterFirst: 'Enter your first expenses',
     peopleLabel: 'people', items: 'items', item: 'item', budgetUsed: 'budget used',
+    pickService: 'Pick a service', pickServiceSub: 'Tap to add — typical price filled in',
+    customService: '+ Custom service', searchPlaceholder: 'Search…',
+    noResults: 'No matches. Try a different search or add a custom service.',
+    israeli: 'IL', popular: 'Popular',
+    customCat: '+ Custom category', pickCat: 'Pick a category',
+    pickCatSub: 'Tap to add — or create your own',
   },
   he: {
     brand: 'Streamly',
@@ -726,10 +780,73 @@ const I18N = {
     helloMorning: 'בוקר טוב', helloAfternoon: 'אחר הצהריים טובים', helloEvening: 'ערב טוב',
     monthsTracked: 'חודשים נרשמו', enterFirst: 'הזן את ההוצאות הראשונות',
     peopleLabel: 'נפשות', items: 'פריטים', item: 'פריט', budgetUsed: 'מהתקציב',
+    pickService: 'בחר שירות', pickServiceSub: 'הקש להוספה — מחיר טיפוסי ימולא',
+    customService: '+ שירות מותאם אישית', searchPlaceholder: 'חיפוש…',
+    noResults: 'לא נמצאו תוצאות. נסה חיפוש אחר או הוסף שירות מותאם.',
+    israeli: 'IL', popular: 'פופולרי',
+    customCat: '+ קטגוריה מותאמת אישית', pickCat: 'בחר קטגוריה',
+    pickCatSub: 'הקש להוספה — או צור משלך',
   }
 };
 
 const COLORS = ['cat-1','cat-2','cat-3','cat-4','cat-5','cat-6','cat-7','cat-8'];
+
+// Service catalog — preset list of common services with typical prices and matching category
+// Prices: USD baseline; ILS rough conversion built in
+const SERVICE_CATALOG = [
+  // Streaming
+  { name: 'Netflix', cat: 'streaming', usd: 16, ils: 60 },
+  { name: 'Disney+', cat: 'streaming', usd: 8, ils: 30 },
+  { name: 'Apple TV+', cat: 'streaming', usd: 10, ils: 35 },
+  { name: 'Amazon Prime Video', cat: 'streaming', usd: 9, ils: 30 },
+  { name: 'HBO Max / Max', cat: 'streaming', usd: 16, ils: 60 },
+  { name: 'Paramount+', cat: 'streaming', usd: 12, ils: 40 },
+  { name: 'YES', cat: 'streaming', usd: 50, ils: 180, israeli: true },
+  { name: 'HOT', cat: 'streaming', usd: 50, ils: 180, israeli: true },
+  { name: 'סלקום TV', cat: 'streaming', usd: 35, ils: 130, israeli: true },
+  { name: 'פרטנר TV', cat: 'streaming', usd: 35, ils: 130, israeli: true },
+  { name: 'סטינג TV', cat: 'streaming', usd: 15, ils: 50, israeli: true },
+  // Music
+  { name: 'Spotify (Family)', cat: 'music', usd: 17, ils: 50 },
+  { name: 'Apple Music (Family)', cat: 'music', usd: 17, ils: 50 },
+  { name: 'YouTube Premium (Family)', cat: 'music', usd: 23, ils: 80 },
+  { name: 'Audible', cat: 'music', usd: 15, ils: 55 },
+  // Internet & Mobile
+  { name: 'Home internet', cat: 'connectivity', usd: 60, ils: 100 },
+  { name: 'Mobile plan — Adult', cat: 'connectivity', usd: 30, ils: 50 },
+  { name: 'Mobile plan — Kids', cat: 'connectivity', usd: 15, ils: 30 },
+  { name: 'בזק', cat: 'connectivity', usd: 30, ils: 110, israeli: true },
+  { name: 'HOT', cat: 'connectivity', usd: 25, ils: 90, israeli: true },
+  { name: 'סלקום', cat: 'connectivity', usd: 30, ils: 100, israeli: true },
+  { name: 'פרטנר', cat: 'connectivity', usd: 30, ils: 100, israeli: true },
+  { name: 'פלאפון', cat: 'connectivity', usd: 30, ils: 100, israeli: true },
+  // Cloud
+  { name: 'iCloud+', cat: 'cloud', usd: 3, ils: 10 },
+  { name: 'Google One', cat: 'cloud', usd: 2, ils: 8 },
+  { name: 'Dropbox', cat: 'cloud', usd: 12, ils: 45 },
+  { name: 'OneDrive', cat: 'cloud', usd: 7, ils: 25 },
+  // Gaming
+  { name: 'PlayStation Plus', cat: 'gaming', usd: 10, ils: 40 },
+  { name: 'Xbox Game Pass', cat: 'gaming', usd: 15, ils: 55 },
+  { name: 'Nintendo Online', cat: 'gaming', usd: 4, ils: 15 },
+  // Education
+  { name: 'Duolingo Plus', cat: 'education', usd: 7, ils: 25 },
+  { name: 'Khan Academy Kids', cat: 'education', usd: 0, ils: 0 },
+  { name: 'MasterClass', cat: 'education', usd: 15, ils: 55 },
+  // News & reading
+  { name: 'Kindle Unlimited', cat: 'misc', usd: 12, ils: 40 },
+  { name: 'New York Times', cat: 'misc', usd: 17, ils: 60 },
+];
+
+const CATEGORY_PRESETS = {
+  streaming:    { name_en: 'Streaming',         name_he: 'סטרימינג',          icon: '▶', color: 'cat-1' },
+  music:        { name_en: 'Music',             name_he: 'מוזיקה',            icon: '♪', color: 'cat-2' },
+  connectivity: { name_en: 'Internet & Mobile', name_he: 'אינטרנט וסלולר',    icon: '◉', color: 'cat-3' },
+  gaming:       { name_en: 'Gaming',            name_he: 'משחקים',            icon: '◆', color: 'cat-4' },
+  cloud:        { name_en: 'Cloud & Storage',   name_he: 'ענן ואחסון',         icon: '☁', color: 'cat-5' },
+  education:    { name_en: 'Education',         name_he: 'חינוך',             icon: '✎', color: 'cat-6' },
+  misc:         { name_en: 'Other',             name_he: 'אחר',               icon: '◈', color: 'cat-7' },
+};
 
 const SAMPLE_EN = [
   { id: 'streaming', name: 'Streaming', icon: '▶', color: 'cat-1', items: [
@@ -773,6 +890,7 @@ let data = {
 let openCategories = new Set();
 let selectedIcon = '◆';
 let selectedColor = 'cat-1';
+let pickerTargetCategoryId = null;
 
 const t = key => I18N[data.lang]?.[key] ?? I18N.en[key] ?? key;
 const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -988,8 +1106,8 @@ function renderCategories() {
       });
     });
     catEl.querySelector('[data-action="add-item"]').addEventListener('click', () => {
-      cat.items.push({ id: 'i' + Date.now(), name: t('sampleService'), budget: 0, months: Array(12).fill(0) });
-      openCategories.add(catId); saveData(); renderCategories(); renderStats();
+      pickerTargetCategoryId = catId;
+      openServicePicker(catId);
     });
   });
 }
@@ -999,6 +1117,121 @@ function renderSettings() {
   document.getElementById('people-input').value = data.people;
   document.getElementById('currency-input').value = data.currency;
   document.getElementById('lang-input').value = data.lang;
+}
+
+function openServicePicker(catId) {
+  pickerTargetCategoryId = catId;
+  const cat = data.categories.find(c => c.id === catId);
+  const search = document.getElementById('service-search');
+  search.value = '';
+  search.placeholder = t('searchPlaceholder');
+  renderServiceList('', cat);
+  document.getElementById('service-modal').classList.add('show');
+  setTimeout(() => search.focus(), 100);
+}
+
+function renderServiceList(query, cat) {
+  const list = document.getElementById('service-list');
+  const q = (query || '').trim().toLowerCase();
+
+  // Filter: prefer this category's matching services first, then all
+  let services = SERVICE_CATALOG.slice();
+  if (q) {
+    services = services.filter(s => s.name.toLowerCase().includes(q));
+  } else if (cat) {
+    // When opened from a specific category, prioritize that category's services
+    const matchKey = Object.keys(CATEGORY_PRESETS).find(k => CATEGORY_PRESETS[k].color === cat.color);
+    if (matchKey) {
+      const matching = services.filter(s => s.cat === matchKey);
+      const rest = services.filter(s => s.cat !== matchKey);
+      services = [...matching, ...rest];
+    }
+  }
+
+  // Filter out services already in this category
+  if (cat) {
+    const existing = new Set(cat.items.map(i => i.name.toLowerCase()));
+    services = services.filter(s => !existing.has(s.name.toLowerCase()));
+  }
+
+  if (services.length === 0) {
+    list.innerHTML = `<div class="service-empty">${t('noResults')}</div>`;
+    return;
+  }
+
+  // Group by category
+  const groups = {};
+  services.forEach(s => {
+    if (!groups[s.cat]) groups[s.cat] = [];
+    groups[s.cat].push(s);
+  });
+
+  list.innerHTML = Object.keys(groups).map(catKey => {
+    const preset = CATEGORY_PRESETS[catKey];
+    const groupName = data.lang === 'he' ? preset.name_he : preset.name_en;
+    return `
+      <div class="service-group">
+        <div class="service-group-label">${groupName}</div>
+        ${groups[catKey].map(s => {
+          const price = data.currency === 'ILS' ? s.ils : s.usd;
+          const israeliFlag = s.israeli ? `<span class="service-row-flag">${t('israeli')}</span>` : '';
+          return `
+            <div class="service-row" data-name="${escapeHtml(s.name)}" data-price="${price}" data-cat="${catKey}">
+              <div class="service-row-icon" style="background: var(--${preset.color}-soft); color: var(--${preset.color}-deep);">${preset.icon}</div>
+              <div class="service-row-name">${escapeHtml(s.name)}</div>
+              ${israeliFlag}
+              <div class="service-row-price">${price > 0 ? fmt(price) : '—'}</div>
+            </div>`;
+        }).join('')}
+      </div>`;
+  }).join('');
+
+  list.querySelectorAll('.service-row').forEach(row => {
+    row.addEventListener('click', () => {
+      addServiceFromPicker(row.dataset.name, Number(row.dataset.price));
+    });
+  });
+}
+
+function addServiceFromPicker(name, price) {
+  const cat = data.categories.find(c => c.id === pickerTargetCategoryId);
+  if (!cat) return;
+  cat.items.push({
+    id: 'i' + Date.now(),
+    name: name,
+    budget: price || 0,
+    months: Array(12).fill(0)
+  });
+  openCategories.add(cat.id);
+  saveData();
+  document.getElementById('service-modal').classList.remove('show');
+  renderCategories(); renderStats(); renderChart();
+  showToast(`✓ ${name}`);
+}
+
+function addCustomService() {
+  const cat = data.categories.find(c => c.id === pickerTargetCategoryId);
+  if (!cat) return;
+  cat.items.push({
+    id: 'i' + Date.now(),
+    name: t('sampleService'),
+    budget: 0,
+    months: Array(12).fill(0)
+  });
+  openCategories.add(cat.id);
+  saveData();
+  document.getElementById('service-modal').classList.remove('show');
+  renderCategories(); renderStats();
+  // Focus the new item's name field
+  setTimeout(() => {
+    const inputs = document.querySelectorAll(`[data-cat="${cat.id}"] .item-name`);
+    const last = inputs[inputs.length - 1];
+    if (last) {
+      last.focus();
+      last.select();
+      last.scrollIntoView({behavior: 'smooth', block: 'center'});
+    }
+  }, 100);
 }
 
 function openMonthEditor(catId, itemId) {
@@ -1023,6 +1256,74 @@ function openMonthEditor(catId, itemId) {
 
 const ICONS = ['▶','♪','◉','◆','☁','✎','+','★','✦','◐','♥','▲','■','●','✈','♛','☀','⚙','◈','✿','♫'];
 function openCategoryModal() {
+  // Show preset picker by default, hide custom form
+  document.getElementById('cat-presets-view').style.display = 'block';
+  document.getElementById('cat-custom-view').style.display = 'none';
+  document.getElementById('cat-modal-actions').style.display = 'none';
+  document.getElementById('cat-modal-title').textContent = t('pickCat');
+  document.getElementById('cat-modal-sub').textContent = t('pickCatSub');
+
+  renderCategoryPresets();
+  document.getElementById('cat-modal').classList.add('show');
+}
+
+function renderCategoryPresets() {
+  const list = document.getElementById('cat-preset-list');
+  // Filter out categories already added (matched by color, our proxy for "type")
+  const usedColors = new Set(data.categories.map(c => c.color));
+  const presets = Object.keys(CATEGORY_PRESETS)
+    .map(key => ({ key, ...CATEGORY_PRESETS[key] }))
+    .filter(p => !usedColors.has(p.color));
+
+  if (presets.length === 0) {
+    list.innerHTML = `<div class="service-empty">${data.lang === 'he' ? 'הוספת את כל הקטגוריות המוכנות' : 'All preset categories added'}</div>`;
+    return;
+  }
+
+  list.innerHTML = presets.map(p => {
+    const name = data.lang === 'he' ? p.name_he : p.name_en;
+    return `
+      <div class="service-row" data-key="${p.key}">
+        <div class="service-row-icon" style="background: var(--${p.color}-soft); color: var(--${p.color}-deep);">${p.icon}</div>
+        <div class="service-row-name">${name}</div>
+      </div>`;
+  }).join('');
+
+  list.querySelectorAll('.service-row').forEach(row => {
+    row.addEventListener('click', () => {
+      addCategoryFromPreset(row.dataset.key);
+    });
+  });
+}
+
+function addCategoryFromPreset(key) {
+  const preset = CATEGORY_PRESETS[key];
+  const name = data.lang === 'he' ? preset.name_he : preset.name_en;
+  const newCat = {
+    id: 'cat' + Date.now(),
+    name: name,
+    icon: preset.icon,
+    color: preset.color,
+    items: []
+  };
+  data.categories.push(newCat);
+  openCategories.add(newCat.id);
+  document.getElementById('cat-modal').classList.remove('show');
+  saveData(); showPage('categories'); render();
+  showToast(`✓ ${name}`);
+  // Immediately open the service picker for the new category
+  setTimeout(() => {
+    openServicePicker(newCat.id);
+  }, 350);
+}
+
+function showCustomCategoryForm() {
+  document.getElementById('cat-presets-view').style.display = 'none';
+  document.getElementById('cat-custom-view').style.display = 'block';
+  document.getElementById('cat-modal-actions').style.display = 'flex';
+  document.getElementById('cat-modal-title').textContent = t('newCatTitle');
+  document.getElementById('cat-modal-sub').textContent = t('newCatSub');
+
   const cp = document.getElementById('color-picker');
   cp.innerHTML = COLORS.map(c => `<div class="color-option ${c === selectedColor ? 'selected' : ''}" data-c="${c}" style="background: var(--${c});"></div>`).join('');
   cp.querySelectorAll('.color-option').forEach(el => {
@@ -1043,7 +1344,6 @@ function openCategoryModal() {
   });
   document.getElementById('new-cat-name').value = '';
   document.getElementById('new-cat-name').placeholder = data.lang === 'he' ? 'לדוגמה: ספרים דיגיטליים' : 'e.g. Digital books';
-  document.getElementById('cat-modal').classList.add('show');
   setTimeout(() => document.getElementById('new-cat-name').focus(), 100);
 }
 
@@ -1100,7 +1400,17 @@ function init() {
   document.getElementById('cat-modal').addEventListener('click', e => { if (e.target.id === 'cat-modal') document.getElementById('cat-modal').classList.remove('show'); });
   document.getElementById('cat-cancel').addEventListener('click', () => document.getElementById('cat-modal').classList.remove('show'));
   document.getElementById('cat-create').addEventListener('click', createCategory);
+  document.getElementById('cat-custom-btn').addEventListener('click', showCustomCategoryForm);
   document.getElementById('new-cat-name').addEventListener('keydown', e => { if (e.key === 'Enter') createCategory(); });
+
+  // Service picker listeners
+  document.getElementById('service-modal-close').addEventListener('click', () => document.getElementById('service-modal').classList.remove('show'));
+  document.getElementById('service-modal').addEventListener('click', e => { if (e.target.id === 'service-modal') document.getElementById('service-modal').classList.remove('show'); });
+  document.getElementById('service-custom-btn').addEventListener('click', addCustomService);
+  document.getElementById('service-search').addEventListener('input', e => {
+    const cat = data.categories.find(c => c.id === pickerTargetCategoryId);
+    renderServiceList(e.target.value, cat);
+  });
   document.getElementById('year-input').addEventListener('change', e => { data.year = Number(e.target.value); saveData(); });
   document.getElementById('people-input').addEventListener('change', e => { data.people = Math.max(1, Number(e.target.value) || 1); saveData(); renderStats(); });
   document.getElementById('currency-input').addEventListener('change', e => { data.currency = e.target.value; saveData(); render(); });
