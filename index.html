@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f0f0e">
+<meta name="description" content="Track your family's multimedia subscriptions and digital expenses. Free, private, no signup.">
+<title>Streamly — Family Subscription Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📺</text></svg>">
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --surface-2: #f4f4f2;
+    --ink: #0f0f0e;
+    --ink-2: #525252;
+    --ink-3: #8a8a87;
+    --line: #ebebe7;
+    --line-2: #d8d8d3;
+    --brand: #6366f1;
+    --brand-deep: #4f46e5;
+    --brand-soft: #eef0ff;
+    --good: #10b981;
+    --good-soft: #ecfdf5;
+    --bad: #ef4444;
+    --bad-soft: #fef2f2;
+    --cat-1: #f97316;  --cat-1-soft: #fff7ed;  --cat-1-deep: #c2410c;
+    --cat-2: #ec4899;  --cat-2-soft: #fdf2f8;  --cat-2-deep: #be185d;
+    --cat-3: #3b82f6;  --cat-3-soft: #eff6ff;  --cat-3-deep: #1d4ed8;
+    --cat-4: #8b5cf6;  --cat-4-soft: #f5f3ff;  --cat-4-deep: #6d28d9;
+    --cat-5: #06b6d4;  --cat-5-soft: #ecfeff;  --cat-5-deep: #0e7490;
+    --cat-6: #10b981;  --cat-6-soft: #ecfdf5;  --cat-6-deep: #047857;
+    --cat-7: #eab308;  --cat-7-soft: #fefce8;  --cat-7-deep: #a16207;
+    --cat-8: #f43f5e;  --cat-8-soft: #fff1f2;  --cat-8-deep: #be123c;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bot: env(safe-area-inset-bottom, 0px);
+    --nav-h: 64px;
+    --header-h: 56px;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { font-size: 16px; }
+  html, body {
+    background: var(--bg); color: var(--ink);
+    font-family: 'Inter', 'Heebo', -apple-system, system-ui, sans-serif;
+    line-height: 1.5; min-height: 100vh; overflow-x: hidden;
+    overscroll-behavior-y: none; -webkit-font-smoothing: antialiased;
+  }
+  body { padding-top: var(--safe-top); padding-bottom: calc(var(--nav-h) + var(--safe-bot)); }
+  body.rtl { direction: rtl; }
+  body.rtl, body.rtl * { font-family: 'Heebo', 'Inter', sans-serif; }
+  .app-header {
+    position: sticky; top: 0;
+    background: rgba(250, 250, 249, 0.85);
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    border-bottom: 1px solid var(--line);
+    padding: 0.75rem 1rem;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 50; height: var(--header-h);
+  }
+  .brand { display: flex; align-items: center; gap: 0.5rem; font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
+  .brand-mark {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--brand) 0%, var(--cat-1) 100%);
+    color: #fff; border-radius: 9px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.95rem;
+  }
+  .lang-toggle {
+    background: var(--surface); border: 1px solid var(--line);
+    padding: 0.4rem 0.75rem; font-family: inherit;
+    font-size: 0.78rem; font-weight: 500; color: var(--ink-2);
+    cursor: pointer; border-radius: 100px; transition: all 0.15s;
+  }
+  .lang-toggle:active { background: var(--ink); color: #fff; border-color: var(--ink); transform: scale(0.97); }
+  .page { display: none; padding: 1rem 1rem 1.5rem; }
+  .page.active { display: block; animation: pageIn 0.25s ease; }
+  @keyframes pageIn { from { opacity: 0; transform: translateY(6px); } }
+  .welcome { text-align: center; padding: 3rem 1.5rem 2rem; }
+  .welcome-icon {
+    width: 80px; height: 80px; margin: 0 auto 1.25rem;
+    background: linear-gradient(135deg, var(--brand) 0%, var(--cat-1) 100%);
+    border-radius: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem; color: #fff;
+  }
+  .welcome h1 { font-size: 1.85rem; font-weight: 700; line-height: 1.15; letter-spacing: -0.025em; margin-bottom: 0.65rem; }
+  .welcome h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--brand) 0%, var(--cat-1) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .welcome p { font-size: 0.98rem; color: var(--ink-2); margin-bottom: 2rem; max-width: 320px; margin-inline: auto; line-height: 1.55; }
+  .welcome-actions { display: flex; flex-direction: column; gap: 0.6rem; max-width: 280px; margin: 0 auto; }
+  .btn {
+    background: var(--ink); color: #fff; border: none;
+    padding: 0 1.25rem; height: 48px; font-family: inherit;
+    font-size: 0.95rem; font-weight: 500; cursor: pointer;
+    transition: transform 0.12s, background 0.18s; border-radius: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 0.5rem; width: 100%; letter-spacing: -0.01em;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: linear-gradient(135deg, var(--brand) 0%, var(--brand-deep) 100%); }
+  .btn-ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+  .btn-ghost:active { background: var(--surface-2); }
+  .btn-text {
+    background: transparent; color: var(--ink-2); border: none;
+    padding: 0.75rem; font-size: 0.9rem; text-decoration: none;
+    width: auto; height: auto; min-height: 44px;
+  }
+  .btn-text:hover { color: var(--brand); }
+  .btn-danger { background: var(--surface); color: var(--bad); border: 1px solid var(--line); }
+  .btn-danger:active { background: var(--bad-soft); border-color: var(--bad); }
+  .greeting { margin-bottom: 1rem; }
+  .greeting-label { font-size: 0.75rem; color: var(--ink-3); font-weight: 500; margin-bottom: 0.2rem; }
+  .greeting h2 { font-size: 1.55rem; font-weight: 700; letter-spacing: -0.022em; line-height: 1.15; }
+  .hero-stat {
+    background: var(--surface); border: 1px solid var(--line);
+    padding: 1.5rem 1.4rem; border-radius: var(--radius-lg);
+    margin-bottom: 0.85rem; position: relative; overflow: hidden;
+  }
+  .hero-stat::before {
+    content: ''; position: absolute; top: -50%; right: -30%;
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, var(--brand-soft) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-size: 0.72rem; color: var(--ink-3); font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 0.55rem; position: relative;
+  }
+  .hero-value {
+    font-size: 2.4rem; font-weight: 700; line-height: 1;
+    letter-spacing: -0.035em; color: var(--ink);
+    position: relative; font-feature-settings: "tnum";
+  }
+  .hero-bar {
+    height: 6px; background: var(--line); border-radius: 100px;
+    overflow: hidden; margin-top: 1rem; position: relative;
+  }
+  .hero-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--brand) 0%, var(--cat-1) 100%);
+    border-radius: 100px;
+    transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .hero-sub { font-size: 0.82rem; color: var(--ink-2); margin-top: 0.5rem; position: relative; }
+  .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1.5rem; }
+  .stat-mini {
+    background: var(--surface); padding: 0.95rem 1rem;
+    border-radius: var(--radius); border: 1px solid var(--line);
+  }
+  .stat-mini-label {
+    font-size: 0.72rem; color: var(--ink-3); font-weight: 500;
+    margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .stat-mini-value {
+    font-size: 1.25rem; font-weight: 700; line-height: 1;
+    letter-spacing: -0.02em; font-feature-settings: "tnum";
+  }
+  .stat-mini.under .stat-mini-value { color: var(--good); }
+  .stat-mini.over .stat-mini-value { color: var(--bad); }
+  .stat-mini-sub { font-size: 0.72rem; color: var(--ink-3); margin-top: 0.35rem; }
+  .section-title { display: flex; align-items: baseline; justify-content: space-between; margin: 1.5rem 0 0.75rem; }
+  .section-title h3 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.015em; }
+  .section-title .num { font-size: 0.78rem; color: var(--ink-3); font-weight: 500; }
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius-lg); padding: 1.25rem 1rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .chart {
+    display: grid; grid-template-columns: repeat(12, 1fr);
+    gap: 5px; height: 130px; align-items: end; margin-bottom: 0.5rem;
+  }
+  .bar-col {
+    display: flex; flex-direction: column; justify-content: flex-end;
+    height: 100%; cursor: pointer; position: relative;
+  }
+  .bar-stack { display: flex; flex-direction: column-reverse; gap: 2px; }
+  .bar {
+    width: 100%; border-radius: 4px 4px 1px 1px;
+    transition: height 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    min-height: 3px;
+    background: linear-gradient(180deg, var(--brand) 0%, var(--brand-deep) 100%);
+  }
+  .bar.budget { background: var(--line-2); border-radius: 1px 1px 4px 4px; opacity: 0.6; }
+  .month-labels {
+    display: grid; grid-template-columns: repeat(12, 1fr);
+    gap: 5px; font-size: 0.66rem; text-align: center;
+    color: var(--ink-3); font-weight: 500; margin-bottom: 0.85rem;
+  }
+  .legend {
+    display: flex; gap: 1rem; justify-content: center;
+    padding-top: 0.85rem; border-top: 1px solid var(--line);
+    font-size: 0.78rem; color: var(--ink-2);
+  }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+  .legend-swatch { width: 11px; height: 11px; background: var(--brand); border-radius: 3px; }
+  .legend-swatch.budget { background: var(--line-2); }
+  .category {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius-lg); margin-bottom: 0.7rem;
+    overflow: hidden; transition: border-color 0.15s;
+  }
+  .category.open { border-color: var(--line-2); }
+  .cat-header {
+    display: flex; align-items: center; gap: 0.85rem;
+    padding: 0.95rem 1rem; cursor: pointer; user-select: none;
+    min-height: 64px; transition: background 0.15s;
+  }
+  .cat-header:active { background: var(--surface-2); }
+  .cat-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0; font-weight: 600;
+  }
+  .cat-info { flex: 1; min-width: 0; }
+  .cat-name {
+    font-size: 0.98rem; font-weight: 600; line-height: 1.2;
+    letter-spacing: -0.012em; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.2rem;
+  }
+  .cat-meta { display: flex; gap: 0.4rem; align-items: center; font-size: 0.78rem; color: var(--ink-3); }
+  .cat-status {
+    padding: 0.18rem 0.55rem; font-size: 0.68rem; font-weight: 600;
+    border-radius: 100px; letter-spacing: 0.01em;
+  }
+  .cat-status.ok { background: var(--good-soft); color: var(--good); }
+  .cat-status.over { background: var(--bad-soft); color: var(--bad); }
+  .cat-status.empty { background: var(--surface-2); color: var(--ink-3); }
+  .cat-total { text-align: right; flex-shrink: 0; }
+  body.rtl .cat-total { text-align: left; }
+  .cat-total-num { font-size: 1rem; font-weight: 700; line-height: 1; letter-spacing: -0.02em; font-feature-settings: "tnum"; }
+  .cat-total-label { font-size: 0.66rem; color: var(--ink-3); margin-top: 0.25rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .chevron { color: var(--ink-3); font-size: 0.82rem; transition: transform 0.3s; margin-left: 0.15rem; }
+  body.rtl .chevron { margin-left: 0; margin-right: 0.15rem; transform: scaleX(-1); }
+  .category.open .chevron { transform: rotate(180deg); }
+  body.rtl .category.open .chevron { transform: rotate(180deg) scaleX(-1); }
+  .cat-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+  .category.open .cat-body { max-height: 5000px; }
+  .item { padding: 0.85rem 1rem; border-top: 1px solid var(--line); }
+  .item-top { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.65rem; }
+  .item-name {
+    background: transparent; border: none; border-bottom: 1px dashed transparent;
+    font-family: inherit; font-size: 0.94rem; font-weight: 500;
+    color: var(--ink); outline: none; flex: 1; min-width: 0;
+    padding: 0.2rem 0; letter-spacing: -0.01em;
+  }
+  .item-name:focus { border-bottom-color: var(--brand); }
+  .item-delete {
+    background: transparent; border: none; color: var(--ink-3);
+    font-size: 1.1rem; cursor: pointer; width: 30px; height: 30px;
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  }
+  .item-delete:active { background: var(--bad-soft); color: var(--bad); }
+  .item-bottom { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+  .item-field { display: flex; flex-direction: column; }
+  .item-field-label {
+    font-size: 0.65rem; color: var(--ink-3); font-weight: 500;
+    margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .num-input {
+    background: var(--surface-2); border: 1px solid transparent;
+    padding: 0.55rem; font-family: inherit; font-size: 0.9rem;
+    font-weight: 600; color: var(--ink); outline: none;
+    border-radius: var(--radius-sm); width: 100%; text-align: center;
+    transition: all 0.15s; -moz-appearance: textfield;
+    font-feature-settings: "tnum";
+  }
+  .num-input::-webkit-outer-spin-button,
+  .num-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .num-input:focus {
+    border-color: var(--brand); background: var(--surface);
+    box-shadow: 0 0 0 3px var(--brand-soft);
+  }
+  .month-btn {
+    background: var(--surface-2); border: 1px solid transparent;
+    padding: 0.55rem; font-family: inherit; font-size: 0.8rem;
+    color: var(--ink-2); cursor: pointer; border-radius: var(--radius-sm);
+    text-align: center; width: 100%; transition: all 0.15s; font-weight: 500;
+  }
+  .month-btn:active { transform: scale(0.97); }
+  .month-btn.has-data { color: var(--brand); background: var(--brand-soft); font-weight: 600; }
+  .item-total-display {
+    border: none; background: transparent; font-weight: 700;
+    font-size: 1rem; text-align: center; padding: 0.55rem 0;
+    letter-spacing: -0.02em; font-feature-settings: "tnum";
+  }
+  .add-item, .add-cat {
+    width: 100%; background: transparent; border: none;
+    border-top: 1px dashed var(--line); padding: 0.85rem;
+    text-align: center; color: var(--brand); font-family: inherit;
+    font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  }
+  .add-item:active { background: var(--surface-2); }
+  .add-cat {
+    border: 2px dashed var(--line); border-radius: var(--radius-lg);
+    padding: 1.5rem 1rem; margin-top: 1rem;
+    color: var(--ink-2); font-size: 0.95rem; font-weight: 500;
+    transition: all 0.2s; background: var(--surface);
+  }
+  .add-cat:active { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
+  .add-cat .plus { font-size: 1.1rem; margin-right: 0.4rem; color: var(--brand); font-weight: 600; }
+  body.rtl .add-cat .plus { margin-right: 0; margin-left: 0.4rem; }
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    z-index: 50; padding-bottom: var(--safe-bot);
+  }
+  .nav-btn {
+    background: transparent; border: none; padding: 0.5rem;
+    height: var(--nav-h); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 0.25rem;
+    color: var(--ink-3); transition: color 0.15s;
+    font-family: inherit; position: relative;
+  }
+  .nav-btn.active { color: var(--brand); }
+  .nav-btn.active::before {
+    content: ''; position: absolute; top: 0; left: 50%;
+    transform: translateX(-50%); width: 24px; height: 3px;
+    background: var(--brand); border-radius: 0 0 3px 3px;
+  }
+  .nav-btn-icon { font-size: 1.2rem; line-height: 1; }
+  .nav-btn-label { font-size: 0.68rem; font-weight: 500; letter-spacing: 0.01em; }
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(15, 15, 14, 0.55);
+    z-index: 100; display: none; align-items: flex-end;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  .modal-overlay.show { display: flex; }
+  @media (min-width: 600px) { .modal-overlay { align-items: center; justify-content: center; padding: 2rem; } }
+  .modal {
+    background: var(--surface); width: 100%; max-height: 92vh;
+    display: flex; flex-direction: column;
+    border-radius: 24px 24px 0 0;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    padding-bottom: var(--safe-bot);
+  }
+  @media (min-width: 600px) { .modal { max-width: 480px; border-radius: 18px; padding-bottom: 0; } }
+  @keyframes slideUp { from { transform: translateY(100%); } }
+  .modal-handle { width: 38px; height: 4px; background: var(--line-2); border-radius: 2px; margin: 0.7rem auto 0; }
+  @media (min-width: 600px) { .modal-handle { display: none; } }
+  .modal-head {
+    padding: 1rem 1.25rem 0.85rem; border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;
+  }
+  .modal-head h3 { font-size: 1.15rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.018em; }
+  .modal-head .sub { font-size: 0.82rem; color: var(--ink-3); margin-top: 0.2rem; }
+  .close-btn {
+    background: var(--surface-2); border: none;
+    width: 32px; height: 32px; border-radius: 50%;
+    font-size: 1.1rem; cursor: pointer; line-height: 1;
+    color: var(--ink-2); flex-shrink: 0;
+  }
+  .close-btn:active { background: var(--line); }
+  .modal-body { padding: 1.25rem; overflow-y: auto; flex: 1; }
+  .modal-actions {
+    display: flex; gap: 0.5rem;
+    padding: 0.85rem 1.25rem 1.1rem;
+    border-top: 1px solid var(--line);
+  }
+  .modal-actions .btn { flex: 1; }
+  .form-group { margin-bottom: 1rem; }
+  .form-group label {
+    display: block; font-size: 0.72rem; color: var(--ink-3);
+    margin-bottom: 0.4rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .form-group input[type="text"],
+  .form-group input[type="number"],
+  .form-group select {
+    width: 100%; padding: 0.7rem 0.85rem;
+    background: var(--surface-2); border: 1px solid transparent;
+    font-family: inherit; font-size: 0.98rem; color: var(--ink);
+    outline: none; border-radius: var(--radius-sm); transition: all 0.15s;
+  }
+  .form-group input:focus, .form-group select:focus {
+    border-color: var(--brand); background: var(--surface);
+    box-shadow: 0 0 0 3px var(--brand-soft);
+  }
+  .color-picker { display: grid; grid-template-columns: repeat(8, 1fr); gap: 0.4rem; margin-bottom: 1rem; }
+  .color-option {
+    aspect-ratio: 1; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .color-option:active { transform: scale(0.9); }
+  .color-option.selected { border-color: var(--ink); transform: scale(1.05); }
+  .icon-picker { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.4rem; }
+  .icon-option {
+    aspect-ratio: 1; background: var(--surface-2);
+    border: 1px solid transparent; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.05rem; border-radius: var(--radius-sm);
+    transition: all 0.15s; color: var(--ink);
+  }
+  .icon-option:active { transform: scale(0.92); }
+  .icon-option.selected { background: var(--ink); color: #fff; }
+  .month-grid-edit { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+  .month-cell {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.6rem 0.75rem; background: var(--surface-2);
+    border-radius: var(--radius-sm); transition: background 0.15s;
+  }
+  .month-cell:focus-within { background: var(--brand-soft); }
+  .month-cell label { font-size: 0.85rem; flex: 1; color: var(--ink-2); font-weight: 500; }
+  .month-cell input {
+    width: 80px; background: var(--surface);
+    border: 1px solid transparent; border-radius: 6px;
+    padding: 0.35rem; font-family: inherit; font-size: 0.9rem;
+    text-align: center; color: var(--ink); outline: none;
+    font-weight: 600; font-feature-settings: "tnum";
+  }
+  .month-cell input:focus { border-color: var(--brand); }
+  .settings-list {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1.25rem;
+  }
+  .settings-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.95rem 1rem; border-bottom: 1px solid var(--line);
+    min-height: 56px; gap: 1rem;
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row label { font-size: 0.93rem; color: var(--ink); font-weight: 500; }
+  .settings-row input, .settings-row select {
+    background: var(--surface-2); border: 1px solid transparent;
+    padding: 0.4rem 0.7rem; font-family: inherit;
+    font-size: 0.9rem; font-weight: 600; color: var(--ink);
+    text-align: center; outline: none; width: 110px;
+    border-radius: 8px; transition: all 0.15s;
+  }
+  .settings-row input:focus, .settings-row select:focus {
+    border-color: var(--brand); background: var(--surface);
+  }
+  .danger-zone { display: flex; flex-direction: column; gap: 0.55rem; }
+  .about { text-align: center; padding: 2rem 1rem 1rem; font-size: 0.78rem; color: var(--ink-3); line-height: 1.6; }
+  .about-pill {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.3rem 0.75rem; background: var(--good-soft);
+    color: var(--good); border-radius: 100px; font-weight: 600;
+    margin-bottom: 0.5rem; font-size: 0.72rem;
+  }
+  .toast {
+    position: fixed; bottom: calc(var(--nav-h) + 1.5rem + var(--safe-bot));
+    left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: #fff;
+    padding: 0.65rem 1.15rem; font-size: 0.85rem;
+    font-weight: 500; border-radius: 100px;
+    z-index: 200; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0; pointer-events: none;
+    box-shadow: 0 10px 30px rgba(15, 15, 14, 0.25);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  @media (min-width: 600px) {
+    .page { max-width: 640px; margin: 0 auto; }
+    .app-header { max-width: 640px; margin: 0 auto; left: 0; right: 0; }
+  }
+  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--ink-3); }
+  .empty-state-icon {
+    width: 64px; height: 64px; margin: 0 auto 1rem;
+    background: var(--surface-2); border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; color: var(--ink-2);
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <span class="brand-mark">S</span>
+    <span data-i18n="brand">Streamly</span>
+  </div>
+  <button class="lang-toggle" id="lang-toggle">עברית</button>
+</header>
+
+<section class="page" id="page-welcome">
+  <div class="welcome">
+    <div class="welcome-icon">📺</div>
+    <h1 data-i18n="welcomeTitle">Track every <em>subscription</em> in one place.</h1>
+    <p data-i18n="welcomeSub">Streaming, internet, mobile plans — see what you spend each month, set a budget, stop the silent leaks.</p>
+    <div class="welcome-actions">
+      <button class="btn btn-primary" id="welcome-start" data-i18n="welcomeStart">Use sample categories</button>
+      <button class="btn btn-text" id="welcome-empty" data-i18n="welcomeEmpty">Start with empty list</button>
+    </div>
+  </div>
+</section>
+
+<section class="page" id="page-dashboard">
+  <div class="greeting">
+    <div class="greeting-label" id="greeting-text">Good morning</div>
+    <h2 data-i18n="greetingHeader">Your subscriptions</h2>
+  </div>
+
+  <div class="hero-stat">
+    <div class="hero-label" data-i18n="annualTotal">Annual total</div>
+    <div class="hero-value" id="hero-total">—</div>
+    <div class="hero-bar"><div class="hero-bar-fill" id="hero-bar-fill" style="width: 0%"></div></div>
+    <div class="hero-sub" id="hero-sub">—</div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-mini" id="stat-monthly">
+      <div class="stat-mini-label" data-i18n="monthlyAvg">Monthly avg</div>
+      <div class="stat-mini-value">—</div>
+      <div class="stat-mini-sub" data-i18n="actual">Actual spend</div>
+    </div>
+    <div class="stat-mini" id="stat-budget">
+      <div class="stat-mini-label" data-i18n="budgetMonthly">Budget / mo</div>
+      <div class="stat-mini-value">—</div>
+      <div class="stat-mini-sub" data-i18n="planned">Planned</div>
+    </div>
+    <div class="stat-mini" id="stat-variance">
+      <div class="stat-mini-label" data-i18n="variance">Variance</div>
+      <div class="stat-mini-value">—</div>
+      <div class="stat-mini-sub">—</div>
+    </div>
+    <div class="stat-mini" id="stat-perperson">
+      <div class="stat-mini-label" data-i18n="perPerson">Per person</div>
+      <div class="stat-mini-value">—</div>
+      <div class="stat-mini-sub" data-i18n="annual">Annual</div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <h3 data-i18n="trend">Monthly trend</h3>
+    <span class="num">12 mo</span>
+  </div>
+  <div class="chart-card">
+    <div class="chart" id="chart"></div>
+    <div class="month-labels" id="month-labels"></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-swatch"></div><span data-i18n="actual">Actual</span></div>
+      <div class="legend-item"><div class="legend-swatch budget"></div><span data-i18n="budget">Budget</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="page" id="page-categories">
+  <div class="greeting">
+    <div class="greeting-label" data-i18n="manage">Manage</div>
+    <h2 data-i18n="catTitle">Categories &amp; services</h2>
+  </div>
+  <div id="categories"></div>
+  <button class="add-cat" id="add-category-btn">
+    <span class="plus">+</span> <span data-i18n="addCat">Add category</span>
+  </button>
+</section>
+
+<section class="page" id="page-settings">
+  <div class="greeting">
+    <div class="greeting-label" data-i18n="config">Configuration</div>
+    <h2 data-i18n="settings">Settings</h2>
+  </div>
+  <div class="settings-list">
+    <div class="settings-row">
+      <label data-i18n="year">Year</label>
+      <input type="number" id="year-input" min="2020" max="2099">
+    </div>
+    <div class="settings-row">
+      <label data-i18n="people">People in household</label>
+      <input type="number" id="people-input" min="1" max="50">
+    </div>
+    <div class="settings-row">
+      <label data-i18n="currency">Currency</label>
+      <select id="currency-input">
+        <option value="ILS">₪ ILS</option>
+        <option value="USD">$ USD</option>
+        <option value="EUR">€ EUR</option>
+        <option value="GBP">£ GBP</option>
+      </select>
+    </div>
+    <div class="settings-row">
+      <label data-i18n="language">Language</label>
+      <select id="lang-input">
+        <option value="en">English</option>
+        <option value="he">עברית</option>
+      </select>
+    </div>
+  </div>
+  <div class="danger-zone">
+    <button class="btn btn-ghost" id="export-btn" data-i18n="exportData">Export data</button>
+    <button class="btn btn-ghost" id="import-btn" data-i18n="importData">Import data</button>
+    <input type="file" id="import-file" accept=".json" style="display:none">
+    <button class="btn btn-danger" id="reset-btn" data-i18n="resetAll">Reset everything</button>
+  </div>
+  <div class="about">
+    <div class="about-pill"><span>🔒</span><span data-i18n="aboutPill">Private &amp; local</span></div>
+    <div data-i18n="about1">All data stays on your device. No accounts. No tracking.</div>
+  </div>
+</section>
+
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-page="dashboard">
+    <span class="nav-btn-icon">◉</span>
+    <span class="nav-btn-label" data-i18n="navHome">Overview</span>
+  </button>
+  <button class="nav-btn" data-page="categories">
+    <span class="nav-btn-icon">▤</span>
+    <span class="nav-btn-label" data-i18n="navCats">Items</span>
+  </button>
+  <button class="nav-btn" data-page="add">
+    <span class="nav-btn-icon">＋</span>
+    <span class="nav-btn-label" data-i18n="navAdd">Add</span>
+  </button>
+  <button class="nav-btn" data-page="settings">
+    <span class="nav-btn-icon">⚙</span>
+    <span class="nav-btn-label" data-i18n="navSettings">Settings</span>
+  </button>
+</nav>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div><h3 id="modal-title">—</h3><div class="sub" id="modal-sub">—</div></div>
+      <button class="close-btn" id="modal-close">×</button>
+    </div>
+    <div class="modal-body"><div class="month-grid-edit" id="month-grid"></div></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="cat-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div><h3 data-i18n="newCatTitle">New category</h3><div class="sub" data-i18n="newCatSub">Add a custom category to track</div></div>
+      <button class="close-btn" id="cat-modal-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label data-i18n="catName">Name</label>
+        <input type="text" id="new-cat-name" maxlength="40">
+      </div>
+      <div class="form-group">
+        <label data-i18n="color">Color</label>
+        <div class="color-picker" id="color-picker"></div>
+      </div>
+      <div class="form-group">
+        <label data-i18n="icon">Icon</label>
+        <div class="icon-picker" id="icon-picker"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cat-cancel" data-i18n="cancel">Cancel</button>
+      <button class="btn btn-primary" id="cat-create" data-i18n="create">Create</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const I18N = {
+  en: {
+    brand: 'Streamly',
+    welcomeTitle: 'Track every <em>subscription</em> in one place.',
+    welcomeSub: 'Streaming, internet, mobile plans — see what you spend each month, set a budget, stop the silent leaks.',
+    welcomeStart: 'Use sample categories', welcomeEmpty: 'Start with empty list',
+    greetingHeader: 'Your subscriptions',
+    annualTotal: 'Annual total', monthlyAvg: 'Monthly avg', budgetMonthly: 'Budget / mo',
+    variance: 'Variance', perPerson: 'Per person', actual: 'Actual', planned: 'Planned',
+    annual: 'Annual', budget: 'Budget', trend: 'Monthly trend', manage: 'Manage',
+    catTitle: 'Categories & services', addCat: 'Add category', addItem: '+ Add service',
+    config: 'Configuration', settings: 'Settings', year: 'Year',
+    people: 'People in household', currency: 'Currency', language: 'Language',
+    exportData: 'Export data', importData: 'Import data', resetAll: 'Reset everything',
+    aboutPill: 'Private & local', about1: 'All data stays on your device. No accounts. No tracking.',
+    navHome: 'Overview', navCats: 'Items', navAdd: 'Add', navSettings: 'Settings',
+    newCatTitle: 'New category', newCatSub: 'Add a custom category to track',
+    catName: 'Name', color: 'Color', icon: 'Icon', cancel: 'Cancel', create: 'Create',
+    monthlyBudget: 'Budget', avg: 'Average', annualLabel: 'Annual',
+    enterMonths: 'Tap to enter', monthDetail: 'Monthly detail',
+    saved: 'Saved', deleted: 'Deleted', cantDeleteLast: "Can't delete the last item",
+    confirmReset: 'Reset all data and start over?', confirmDeleteItem: 'Delete this service?',
+    nameRequired: 'Please enter a name', sampleService: 'New service',
+    months: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    monthsFull: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+    inBudget: 'On track', overBudget: 'Over', empty: 'Empty',
+    fileImported: 'Imported ✓', importError: 'Could not read file', fileExported: 'Downloaded ✓',
+    helloMorning: 'Good morning', helloAfternoon: 'Good afternoon', helloEvening: 'Good evening',
+    monthsTracked: 'months tracked', enterFirst: 'Enter your first expenses',
+    peopleLabel: 'people', items: 'items', item: 'item', budgetUsed: 'budget used',
+  },
+  he: {
+    brand: 'Streamly',
+    welcomeTitle: 'כל המנויים <em>במקום אחד</em>.',
+    welcomeSub: 'סטרימינג, אינטרנט, סלולר — דע מה אתה משלם בכל חודש, קבע תקציב, ועצור דליפות שקטות.',
+    welcomeStart: 'התחל עם דוגמה', welcomeEmpty: 'התחל מרשימה ריקה',
+    greetingHeader: 'המנויים שלך',
+    annualTotal: 'סה"כ שנתי', monthlyAvg: 'ממוצע חודשי', budgetMonthly: 'תקציב / חודש',
+    variance: 'סטייה', perPerson: 'לנפש', actual: 'בפועל', planned: 'מתוכנן',
+    annual: 'שנתי', budget: 'תקציב', trend: 'מגמה חודשית', manage: 'ניהול',
+    catTitle: 'קטגוריות ושירותים', addCat: 'הוסף קטגוריה', addItem: '+ הוסף שירות',
+    config: 'הגדרות', settings: 'הגדרות', year: 'שנה',
+    people: 'מספר נפשות', currency: 'מטבע', language: 'שפה',
+    exportData: 'ייצוא נתונים', importData: 'ייבוא נתונים', resetAll: 'איפוס מלא',
+    aboutPill: 'פרטי ומקומי', about1: 'כל הנתונים נשמרים אצלך במכשיר. בלי חשבונות. בלי מעקב.',
+    navHome: 'סקירה', navCats: 'פריטים', navAdd: 'הוסף', navSettings: 'הגדרות',
+    newCatTitle: 'קטגוריה חדשה', newCatSub: 'הוסף קטגוריה מותאמת אישית',
+    catName: 'שם', color: 'צבע', icon: 'סמל', cancel: 'ביטול', create: 'צור',
+    monthlyBudget: 'תקציב', avg: 'ממוצע', annualLabel: 'שנתי',
+    enterMonths: 'הקש להזנה', monthDetail: 'פירוט חודשי',
+    saved: 'נשמר', deleted: 'נמחק', cantDeleteLast: 'לא ניתן למחוק את הפריט האחרון',
+    confirmReset: 'לאפס את כל הנתונים?', confirmDeleteItem: 'למחוק את השירות?',
+    nameRequired: 'נא להזין שם', sampleService: 'שירות חדש',
+    months: ['ינו','פבר','מרץ','אפר','מאי','יוני','יולי','אוג','ספט','אוק','נוב','דצמ'],
+    monthsFull: ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'],
+    inBudget: 'במסלול', overBudget: 'חריגה', empty: 'ריק',
+    fileImported: 'יובא ✓', importError: 'לא ניתן לקרוא את הקובץ', fileExported: 'הורד ✓',
+    helloMorning: 'בוקר טוב', helloAfternoon: 'אחר הצהריים טובים', helloEvening: 'ערב טוב',
+    monthsTracked: 'חודשים נרשמו', enterFirst: 'הזן את ההוצאות הראשונות',
+    peopleLabel: 'נפשות', items: 'פריטים', item: 'פריט', budgetUsed: 'מהתקציב',
+  }
+};
+
+const COLORS = ['cat-1','cat-2','cat-3','cat-4','cat-5','cat-6','cat-7','cat-8'];
+
+const SAMPLE_EN = [
+  { id: 'streaming', name: 'Streaming', icon: '▶', color: 'cat-1', items: [
+    { id: 's1', name: 'Netflix', budget: 16, months: Array(12).fill(0) },
+    { id: 's2', name: 'Disney+', budget: 8, months: Array(12).fill(0) },
+  ]},
+  { id: 'music', name: 'Music', icon: '♪', color: 'cat-2', items: [
+    { id: 'm1', name: 'Spotify Family', budget: 17, months: Array(12).fill(0) },
+  ]},
+  { id: 'connectivity', name: 'Internet & Mobile', icon: '◉', color: 'cat-3', items: [
+    { id: 'c1', name: 'Home internet', budget: 60, months: Array(12).fill(0) },
+    { id: 'c2', name: 'Mobile plan', budget: 40, months: Array(12).fill(0) },
+  ]},
+  { id: 'cloud', name: 'Cloud & Tools', icon: '☁', color: 'cat-5', items: [
+    { id: 'cl1', name: 'iCloud / Google One', budget: 5, months: Array(12).fill(0) },
+  ]},
+];
+
+const SAMPLE_HE = [
+  { id: 'streaming', name: 'סטרימינג', icon: '▶', color: 'cat-1', items: [
+    { id: 's1', name: 'Netflix', budget: 60, months: Array(12).fill(0) },
+    { id: 's2', name: 'Disney+', budget: 30, months: Array(12).fill(0) },
+  ]},
+  { id: 'music', name: 'מוזיקה', icon: '♪', color: 'cat-2', items: [
+    { id: 'm1', name: 'Spotify Family', budget: 50, months: Array(12).fill(0) },
+  ]},
+  { id: 'connectivity', name: 'אינטרנט וסלולר', icon: '◉', color: 'cat-3', items: [
+    { id: 'c1', name: 'אינטרנט ביתי', budget: 100, months: Array(12).fill(0) },
+    { id: 'c2', name: 'חבילת סלולר', budget: 50, months: Array(12).fill(0) },
+  ]},
+  { id: 'cloud', name: 'ענן וכלים', icon: '☁', color: 'cat-5', items: [
+    { id: 'cl1', name: 'iCloud / Google One', budget: 20, months: Array(12).fill(0) },
+  ]},
+];
+
+const STORAGE_KEY = 'streamly-v2';
+let data = {
+  initialized: false, year: new Date().getFullYear(),
+  people: 4, currency: 'USD', lang: 'en', categories: [],
+};
+let openCategories = new Set();
+let selectedIcon = '◆';
+let selectedColor = 'cat-1';
+
+const t = key => I18N[data.lang]?.[key] ?? I18N.en[key] ?? key;
+const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function fmt(n) {
+  const num = Math.round(Number(n) || 0);
+  const symbols = { ILS: '₪', USD: '$', EUR: '€', GBP: '£' };
+  const symbol = symbols[data.currency] || data.currency;
+  const formatted = num.toLocaleString(data.lang === 'he' ? 'he-IL' : 'en-US');
+  return data.currency === 'USD' || data.currency === 'GBP' ? `${symbol}${formatted}` : `${formatted} ${symbol}`;
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+let saveTimeout;
+function saveData() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {} }, 300);
+}
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') data = { ...data, ...parsed };
+    }
+  } catch(e) {}
+}
+
+const itemTotal = item => item.months.reduce((a, b) => a + (Number(b) || 0), 0);
+const itemMonthsActive = item => item.months.filter(m => Number(m) > 0).length;
+const itemAvg = item => { const a = itemMonthsActive(item); return a > 0 ? itemTotal(item) / a : 0; };
+const categoryTotal = cat => cat.items.reduce((s, i) => s + itemTotal(i), 0);
+const categoryBudget = cat => cat.items.reduce((s, i) => s + (Number(i.budget) || 0), 0);
+const monthlyTotal = m => data.categories.reduce((s, c) => s + c.items.reduce((s2, i) => s2 + (Number(i.months[m]) || 0), 0), 0);
+const grandTotal = () => data.categories.reduce((s, c) => s + categoryTotal(c), 0);
+const totalBudget = () => data.categories.reduce((s, c) => s + categoryBudget(c), 0);
+
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId)?.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === pageId));
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function applyLang() {
+  document.documentElement.lang = data.lang;
+  document.documentElement.dir = data.lang === 'he' ? 'rtl' : 'ltr';
+  document.body.classList.toggle('rtl', data.lang === 'he');
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    const val = t(key);
+    if (key === 'welcomeTitle') el.innerHTML = val;
+    else el.textContent = val;
+  });
+  document.getElementById('lang-toggle').textContent = data.lang === 'en' ? 'עברית' : 'EN';
+}
+
+function render() {
+  if (!data.initialized) { showPage('welcome'); return; }
+  renderGreeting(); renderStats(); renderChart(); renderCategories(); renderSettings();
+}
+
+function renderGreeting() {
+  const h = new Date().getHours();
+  const key = h < 12 ? 'helloMorning' : h < 18 ? 'helloAfternoon' : 'helloEvening';
+  document.getElementById('greeting-text').textContent = t(key);
+}
+
+function renderStats() {
+  const total = grandTotal();
+  const budgetMonthly = totalBudget();
+  const budgetYearly = budgetMonthly * 12;
+  const avg = total / 12;
+  const variance = budgetYearly - total;
+  const perPerson = data.people > 0 ? total / data.people : 0;
+  document.getElementById('hero-total').textContent = fmt(total);
+  const pct = budgetYearly > 0 ? Math.min(100, (total / budgetYearly) * 100) : 0;
+  document.getElementById('hero-bar-fill').style.width = pct + '%';
+  const elapsed = data.categories.flatMap(c => c.items).reduce((max, i) => {
+    for (let m = 11; m >= 0; m--) if (i.months[m] > 0) return Math.max(max, m + 1);
+    return max;
+  }, 0);
+  const sub = budgetYearly > 0 && total > 0
+    ? `${Math.round(pct)}% ${t('budgetUsed')}`
+    : (elapsed > 0 ? `${elapsed} ${t('monthsTracked')}` : t('enterFirst'));
+  document.getElementById('hero-sub').textContent = sub;
+  setMini('stat-monthly', fmt(avg));
+  setMini('stat-budget', fmt(budgetMonthly));
+  const varEl = document.getElementById('stat-variance');
+  varEl.classList.remove('over', 'under');
+  const vv = varEl.querySelector('.stat-mini-value');
+  const vs = varEl.querySelector('.stat-mini-sub');
+  if (total === 0) { vv.textContent = '—'; vs.textContent = '—'; }
+  else {
+    vv.textContent = (variance < 0 ? '−' : '') + fmt(Math.abs(variance));
+    vs.textContent = variance >= 0 ? t('inBudget') : t('overBudget');
+    varEl.classList.add(variance >= 0 ? 'under' : 'over');
+  }
+  setMini('stat-perperson', fmt(perPerson));
+  document.querySelector('#stat-perperson .stat-mini-sub').textContent = `${data.people} ${t('peopleLabel')}`;
+}
+function setMini(id, val) { document.querySelector(`#${id} .stat-mini-value`).textContent = val; }
+
+function renderChart() {
+  const chart = document.getElementById('chart');
+  const labels = document.getElementById('month-labels');
+  const monthly = t('months').map((_, i) => monthlyTotal(i));
+  const monthlyB = totalBudget();
+  const max = Math.max(...monthly, monthlyB, 100);
+  chart.innerHTML = t('months').map((_, i) => {
+    const aH = (monthly[i] / max) * 100;
+    const bH = (monthlyB / max) * 100;
+    return `<div class="bar-col"><div class="bar-stack"><div class="bar budget" style="height:${bH}%"></div><div class="bar" style="height:${aH}%"></div></div></div>`;
+  }).join('');
+  labels.innerHTML = t('months').map(m => `<div>${m}</div>`).join('');
+}
+
+function renderCategories() {
+  const container = document.getElementById('categories');
+  if (data.categories.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📂</div><div>${data.lang === 'he' ? 'אין קטגוריות עדיין' : 'No categories yet'}</div></div>`;
+    return;
+  }
+  container.innerHTML = data.categories.map(cat => {
+    const total = categoryTotal(cat);
+    const budget = categoryBudget(cat) * 12;
+    const status = total === 0 ? 'empty' : (total <= budget ? 'ok' : 'over');
+    const statusText = total === 0 ? t('empty') : (total <= budget ? t('inBudget') : t('overBudget'));
+    const isOpen = openCategories.has(cat.id);
+    const color = cat.color || 'cat-1';
+    const itemsCount = cat.items.length;
+    const itemsLabel = data.lang === 'he' ? t('items') : (itemsCount === 1 ? t('item') : t('items'));
+    return `
+      <div class="category ${isOpen ? 'open' : ''}" data-cat="${cat.id}">
+        <div class="cat-header" data-action="toggle">
+          <span class="cat-icon" style="background: var(--${color}-soft); color: var(--${color}-deep);">${cat.icon}</span>
+          <div class="cat-info">
+            <div class="cat-name">${escapeHtml(cat.name)}</div>
+            <div class="cat-meta">
+              <span class="cat-status ${status}">${statusText}</span>
+              <span>·</span>
+              <span>${itemsCount} ${itemsLabel}</span>
+            </div>
+          </div>
+          <div class="cat-total">
+            <div class="cat-total-num">${fmt(total)}</div>
+            <div class="cat-total-label">${t('annualLabel')}</div>
+          </div>
+          <span class="chevron">▾</span>
+        </div>
+        <div class="cat-body">
+          ${cat.items.map(item => {
+            const active = itemMonthsActive(item);
+            const avg = itemAvg(item);
+            return `
+              <div class="item" data-item="${item.id}">
+                <div class="item-top">
+                  <input class="item-name" data-field="name" value="${escapeHtml(item.name)}">
+                  <button class="item-delete" data-action="del-item" aria-label="delete">×</button>
+                </div>
+                <div class="item-bottom">
+                  <div class="item-field">
+                    <span class="item-field-label">${t('monthlyBudget')}</span>
+                    <input class="num-input budget" data-field="budget" type="number" inputmode="numeric" min="0" value="${item.budget || ''}" placeholder="0">
+                  </div>
+                  <div class="item-field">
+                    <span class="item-field-label">${t('avg')}</span>
+                    <button class="month-btn ${active > 0 ? 'has-data' : ''}" data-action="months">${active > 0 ? fmt(avg) : t('enterMonths')}</button>
+                  </div>
+                  <div class="item-field">
+                    <span class="item-field-label">${t('annualLabel')}</span>
+                    <div class="num-input item-total-display">${fmt(itemTotal(item))}</div>
+                  </div>
+                </div>
+              </div>`;
+          }).join('')}
+          <button class="add-item" data-action="add-item">${t('addItem')}</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  container.querySelectorAll('.category').forEach(catEl => {
+    const catId = catEl.dataset.cat;
+    const cat = data.categories.find(c => c.id === catId);
+    catEl.querySelector('[data-action="toggle"]').addEventListener('click', e => {
+      if (e.target.closest('input, button, .item-delete')) return;
+      if (openCategories.has(catId)) openCategories.delete(catId);
+      else openCategories.add(catId);
+      catEl.classList.toggle('open');
+    });
+    catEl.querySelectorAll('.item').forEach(itemEl => {
+      const itemId = itemEl.dataset.item;
+      const item = cat.items.find(i => i.id === itemId);
+      itemEl.querySelector('[data-field="name"]').addEventListener('change', e => {
+        item.name = e.target.value; saveData();
+      });
+      itemEl.querySelector('[data-field="budget"]').addEventListener('change', e => {
+        item.budget = Number(e.target.value) || 0;
+        saveData(); renderCategories(); renderStats(); renderChart();
+      });
+      itemEl.querySelector('[data-action="months"]').addEventListener('click', () => openMonthEditor(catId, itemId));
+      itemEl.querySelector('[data-action="del-item"]').addEventListener('click', () => {
+        if (cat.items.length <= 1 && data.categories.length === 1) { showToast(t('cantDeleteLast')); return; }
+        if (confirm(t('confirmDeleteItem'))) {
+          if (cat.items.length === 1) { data.categories = data.categories.filter(c => c.id !== catId); openCategories.delete(catId); }
+          else { cat.items = cat.items.filter(i => i.id !== itemId); }
+          saveData(); render(); showToast(t('deleted'));
+        }
+      });
+    });
+    catEl.querySelector('[data-action="add-item"]').addEventListener('click', () => {
+      cat.items.push({ id: 'i' + Date.now(), name: t('sampleService'), budget: 0, months: Array(12).fill(0) });
+      openCategories.add(catId); saveData(); renderCategories(); renderStats();
+    });
+  });
+}
+
+function renderSettings() {
+  document.getElementById('year-input').value = data.year;
+  document.getElementById('people-input').value = data.people;
+  document.getElementById('currency-input').value = data.currency;
+  document.getElementById('lang-input').value = data.lang;
+}
+
+function openMonthEditor(catId, itemId) {
+  const cat = data.categories.find(c => c.id === catId);
+  const item = cat.items.find(i => i.id === itemId);
+  document.getElementById('modal-title').textContent = item.name || t('monthDetail');
+  document.getElementById('modal-sub').textContent = `${cat.name} · ${data.year}`;
+  const grid = document.getElementById('month-grid');
+  grid.innerHTML = t('monthsFull').map((m, i) => `
+    <div class="month-cell">
+      <label>${m}</label>
+      <input type="number" inputmode="numeric" min="0" data-month="${i}" value="${item.months[i] || ''}" placeholder="0">
+    </div>`).join('');
+  grid.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('change', e => {
+      item.months[Number(e.target.dataset.month)] = Number(e.target.value) || 0;
+      saveData(); renderCategories(); renderStats(); renderChart();
+    });
+  });
+  document.getElementById('modal').classList.add('show');
+}
+
+const ICONS = ['▶','♪','◉','◆','☁','✎','+','★','✦','◐','♥','▲','■','●','✈','♛','☀','⚙','◈','✿','♫'];
+function openCategoryModal() {
+  const cp = document.getElementById('color-picker');
+  cp.innerHTML = COLORS.map(c => `<div class="color-option ${c === selectedColor ? 'selected' : ''}" data-c="${c}" style="background: var(--${c});"></div>`).join('');
+  cp.querySelectorAll('.color-option').forEach(el => {
+    el.addEventListener('click', () => {
+      selectedColor = el.dataset.c;
+      cp.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+    });
+  });
+  const ip = document.getElementById('icon-picker');
+  ip.innerHTML = ICONS.map(ic => `<div class="icon-option ${ic === selectedIcon ? 'selected' : ''}" data-ic="${ic}">${ic}</div>`).join('');
+  ip.querySelectorAll('.icon-option').forEach(el => {
+    el.addEventListener('click', () => {
+      selectedIcon = el.dataset.ic;
+      ip.querySelectorAll('.icon-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+    });
+  });
+  document.getElementById('new-cat-name').value = '';
+  document.getElementById('new-cat-name').placeholder = data.lang === 'he' ? 'לדוגמה: ספרים דיגיטליים' : 'e.g. Digital books';
+  document.getElementById('cat-modal').classList.add('show');
+  setTimeout(() => document.getElementById('new-cat-name').focus(), 100);
+}
+
+function createCategory() {
+  const name = document.getElementById('new-cat-name').value.trim();
+  if (!name) { showToast(t('nameRequired')); return; }
+  const newCat = {
+    id: 'cat' + Date.now(), name, icon: selectedIcon, color: selectedColor,
+    items: [{ id: 'i' + Date.now(), name: t('sampleService'), budget: 0, months: Array(12).fill(0) }]
+  };
+  data.categories.push(newCat);
+  openCategories.add(newCat.id);
+  const idx = COLORS.indexOf(selectedColor);
+  selectedColor = COLORS[(idx + 1) % COLORS.length];
+  selectedIcon = '◆';
+  document.getElementById('cat-modal').classList.remove('show');
+  saveData(); showPage('categories'); render();
+  showToast(`✓ ${name}`);
+  setTimeout(() => { document.querySelector(`[data-cat="${newCat.id}"]`)?.scrollIntoView({behavior: 'smooth', block: 'center'}); }, 100);
+}
+
+function startWithSample() {
+  data.categories = JSON.parse(JSON.stringify(data.lang === 'he' ? SAMPLE_HE : SAMPLE_EN));
+  data.initialized = true; saveData(); showPage('dashboard'); render();
+}
+function startEmpty() {
+  data.categories = []; data.initialized = true;
+  saveData(); showPage('categories'); render();
+  setTimeout(openCategoryModal, 200);
+}
+
+function init() {
+  loadData();
+  if (!localStorage.getItem(STORAGE_KEY)) {
+    const browserLang = (navigator.language || 'en').toLowerCase();
+    data.lang = browserLang.startsWith('he') ? 'he' : 'en';
+    data.currency = data.lang === 'he' ? 'ILS' : 'USD';
+  }
+  applyLang();
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const page = btn.dataset.page;
+      if (page === 'add') openCategoryModal();
+      else if (data.initialized) showPage(page);
+      else showPage('welcome');
+    });
+  });
+  document.getElementById('welcome-start').addEventListener('click', startWithSample);
+  document.getElementById('welcome-empty').addEventListener('click', startEmpty);
+  document.getElementById('add-category-btn').addEventListener('click', openCategoryModal);
+  document.getElementById('modal-close').addEventListener('click', () => document.getElementById('modal').classList.remove('show'));
+  document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') document.getElementById('modal').classList.remove('show'); });
+  document.getElementById('cat-modal-close').addEventListener('click', () => document.getElementById('cat-modal').classList.remove('show'));
+  document.getElementById('cat-modal').addEventListener('click', e => { if (e.target.id === 'cat-modal') document.getElementById('cat-modal').classList.remove('show'); });
+  document.getElementById('cat-cancel').addEventListener('click', () => document.getElementById('cat-modal').classList.remove('show'));
+  document.getElementById('cat-create').addEventListener('click', createCategory);
+  document.getElementById('new-cat-name').addEventListener('keydown', e => { if (e.key === 'Enter') createCategory(); });
+  document.getElementById('year-input').addEventListener('change', e => { data.year = Number(e.target.value); saveData(); });
+  document.getElementById('people-input').addEventListener('change', e => { data.people = Math.max(1, Number(e.target.value) || 1); saveData(); renderStats(); });
+  document.getElementById('currency-input').addEventListener('change', e => { data.currency = e.target.value; saveData(); render(); });
+  document.getElementById('lang-input').addEventListener('change', e => { data.lang = e.target.value; saveData(); applyLang(); render(); });
+  document.getElementById('lang-toggle').addEventListener('click', () => { data.lang = data.lang === 'en' ? 'he' : 'en'; saveData(); applyLang(); render(); });
+  document.getElementById('export-btn').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `streamly-${data.year}.json`; a.click();
+    URL.revokeObjectURL(url); showToast(t('fileExported'));
+  });
+  document.getElementById('import-btn').addEventListener('click', () => document.getElementById('import-file').click());
+  document.getElementById('import-file').addEventListener('change', e => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        if (parsed && Array.isArray(parsed.categories)) {
+          data = { ...data, ...parsed, initialized: true };
+          saveData(); applyLang(); showPage('dashboard'); render();
+          showToast(t('fileImported'));
+        } else throw new Error();
+      } catch { showToast(t('importError')); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    if (confirm(t('confirmReset'))) {
+      localStorage.removeItem(STORAGE_KEY);
+      data = { initialized: false, year: new Date().getFullYear(), people: 4,
+        currency: data.lang === 'he' ? 'ILS' : 'USD', lang: data.lang, categories: [] };
+      openCategories.clear(); applyLang(); showPage('welcome'); render();
+    }
+  });
+  if (data.initialized) showPage('dashboard');
+  else showPage('welcome');
+  render();
+}
+init();
+</script>
+</body>
+</html>
