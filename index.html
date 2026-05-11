@@ -1405,7 +1405,7 @@ function showPage(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + pageId)?.classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === pageId));
-  window.scrollTo({ top: 0, behavior: 'instant' });
+  try { window.scrollTo(0, 0); } catch(e) {}
 }
 
 function applyLang() {
@@ -1737,7 +1737,7 @@ function addCustomService() {
     if (last) {
       last.focus();
       last.select();
-      last.scrollIntoView({behavior: 'smooth', block: 'center'});
+      try { last.scrollIntoView({behavior: 'smooth', block: 'center'}); } catch(e) {}
     }
   }, 100);
 }
@@ -1870,7 +1870,7 @@ function createCategory() {
   document.getElementById('cat-modal').classList.remove('show');
   saveData(); showPage('categories'); render();
   showToast(`✓ ${name}`);
-  setTimeout(() => { document.querySelector(`[data-cat="${newCat.id}"]`)?.scrollIntoView({behavior: 'smooth', block: 'center'}); }, 100);
+  setTimeout(() => { try { document.querySelector(`[data-cat="${newCat.id}"]`)?.scrollIntoView({behavior: 'smooth', block: 'center'}); } catch(e) {} }, 100);
 }
 
 function startWithSample() {
